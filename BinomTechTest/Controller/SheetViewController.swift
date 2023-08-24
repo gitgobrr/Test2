@@ -63,7 +63,8 @@ private extension SheetViewController {
         imageView.contentMode = .scaleAspectFit
         imageView.layer.borderColor = UIColor.blue.cgColor
         imageView.layer.borderWidth = 2
-        imageView.roundCorners()
+        imageView.layer.cornerRadius = C.bottomSheetImageHeight/2
+        imageView.layer.masksToBounds = true
     }
     
     func setupDetailsStack() {
