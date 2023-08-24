@@ -9,7 +9,7 @@ import UIKit
 import MapKit
 
 class ViewController: UIViewController {
-    var current = 0
+    
     let locatoinManager = LocationDataManager()
     let mapView = MKMapView()
     let zoomInButton = UIButton()
@@ -23,6 +23,8 @@ class ViewController: UIViewController {
         return stack
     }()
     
+    var currentAnnotationIndex = 0
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setup()
@@ -30,7 +32,7 @@ class ViewController: UIViewController {
     
     @objc func zoomIn() {
         var region = mapView.region
-        guard region.span.latitudeDelta / 2 > 1/60 && region.span.longitudeDelta > 1/60 else {
+        guard region.span.latitudeDelta / 2 > C.maxSpanDelta && region.span.longitudeDelta > C.maxSpanDelta else {
             return
         }
         region.span.latitudeDelta /= 2
@@ -40,7 +42,7 @@ class ViewController: UIViewController {
     
     @objc func zoomOut() {
         var region = mapView.region
-        guard region.span.latitudeDelta * 2 <= 180 && region.span.longitudeDelta * 2 <= 180 else {
+        guard region.span.latitudeDelta * 2 <= C.maxSpanDelta && region.span.longitudeDelta * 2 <= C.maxSpanDelta else {
             return
         }
         region.span.latitudeDelta *= 2
@@ -49,12 +51,12 @@ class ViewController: UIViewController {
     }
     
     @objc func nextTracker() {
-        if current >= mapView.annotations.count {
-            current = 0
+        if currentAnnotationIndex >= mapView.annotations.count {
+            currentAnnotationIndex = 0
         }
         guard !mapView.annotations.isEmpty else { return }
-        mapView.setCenter(mapView.annotations[current].coordinate, animated: true)
-        current += 1
+        mapView.setCenter(mapView.annotations[currentAnnotationIndex].coordinate, animated: true)
+        currentAnnotationIndex += 1
     }
     
     @objc func snapToMyLocation() {
@@ -82,7 +84,7 @@ extension ViewController: MKMapViewDelegate {
             return MKTileOverlayRenderer()
         }
     }
-
+    
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         mapView.deselectAnnotation(view.annotation, animated: false)
         let vc = SheetViewController(annotationView: view)
@@ -92,7 +94,7 @@ extension ViewController: MKMapViewDelegate {
         vc.modalPresentationStyle = .pageSheet
         if let sheet = vc.sheetPresentationController {
             sheet.detents = [.custom(identifier: .medium,resolver: { context in
-                context.maximumDetentValue * 0.2
+                context.maximumDetentValue * C.sheetHeightMultiplier
             })]
             sheet.largestUndimmedDetentIdentifier = .medium
             sheet.prefersGrabberVisible = true
@@ -129,42 +131,38 @@ extension ViewController {
             nextTrackerButton
         ])
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        
         NSLayoutConstraint.activate([
             stackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
         ])
     }
     private func setupMap() {
-        mapView.register(PinAnnotationView.self, forAnnotationViewWithReuseIdentifier: PinAnnotationView.id)
         let urlTeplate = "http://tile.openstreetmap.org/{z}/{x}/{y}.png"
         let overlay = MKTileOverlay(urlTemplate: urlTeplate)
         overlay.canReplaceMapContent = true
         mapView.addOverlay(overlay, level: .aboveLabels)
         mapView.delegate = self
         view.addSubview(mapView)
-        let ant = PinAnnotation()
-        ant.coordinate = .init(latitude: 41.6929, longitude: 44.8082)
-        ant.title = "Илья"
-        ant.image = .init(named: "avatar")
-        mapView.addAnnotation(ant)
-        let ant2 = PinAnnotation()
-        let ant3 = PinAnnotation()
-        ant2.coordinate = .init(latitude: 40, longitude: 40)
-        ant3.coordinate = .init(latitude: 45, longitude: 40)
-        mapView.addAnnotations([
-            ant2,ant3
-        ])
         mapView.frame = view.frame
         mapView.autoresizingMask = [.flexibleWidth,.flexibleHeight]
         mapView.showsUserLocation = true
+        mapView.register(PinAnnotationView.self, forAnnotationViewWithReuseIdentifier: PinAnnotationView.id)
+        
+        for i in 0..<3 {
+            let annotation = PinAnnotation()
+            let coordinates: (Double, Double) = (.random(in: -45...45), .random(in: -45...45))
+            annotation.coordinate = .init(latitude: CLLocationDegrees(coordinates.0), longitude: CLLocationDegrees(coordinates.1))
+            annotation.title = "annotation \(i)"
+            annotation.image = .init(named: "avatar")
+            mapView.addAnnotation(annotation)
+        }
     }
+    
     private func setupButtons() {
-        [
-            (zoomInButton,UIImage(named: "zin")),
-            (zoomOutButton,UIImage(named: "zout")),
-            (myLocationButton,UIImage(named: "myloc")),
-            (nextTrackerButton,UIImage(named: "nxttrack"))
+        [(zoomInButton,UIImage(named: "zin")),
+         (zoomOutButton,UIImage(named: "zout")),
+         (myLocationButton,UIImage(named: "myloc")),
+         (nextTrackerButton,UIImage(named: "nxttrack"))
         ].forEach { (btn, img) in
             print(btn)
             btn.setImage(img, for: .normal)

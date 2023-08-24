@@ -21,7 +21,7 @@ class PinAnnotationView: MKAnnotationView {
     
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-        frame = CGRect(x: 0, y: 0, width: 48, height: 48)
+        frame = CGRect(x: 0, y: 0, width: C.pinAnnotationHeight, height: C.pinAnnotationHeight)
         canShowCallout = true
         setupUI()
     }
