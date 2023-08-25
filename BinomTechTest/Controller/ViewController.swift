@@ -31,23 +31,11 @@ class ViewController: UIViewController {
     }
     
     @objc func zoomIn() {
-        var region = mapView.region
-        guard region.span.latitudeDelta / 2 > C.maxSpanDelta && region.span.longitudeDelta > C.maxSpanDelta else {
-            return
-        }
-        region.span.latitudeDelta /= 2
-        region.span.longitudeDelta /= 2
-        mapView.setRegion(region, animated: false)
+        mapView.camera.centerCoordinateDistance /= 1.5
     }
     
     @objc func zoomOut() {
-        var region = mapView.region
-        guard region.span.latitudeDelta * 2 <= C.maxSpanDelta && region.span.longitudeDelta * 2 <= C.maxSpanDelta else {
-            return
-        }
-        region.span.latitudeDelta *= 2
-        region.span.longitudeDelta *= 2
-        mapView.setRegion(region, animated: false)
+        mapView.camera.centerCoordinateDistance *= 1.5
     }
     
     @objc func nextTracker() {
@@ -156,6 +144,10 @@ extension ViewController {
             annotation.image = .init(named: "avatar")
             mapView.addAnnotation(annotation)
         }
+        mapView.cameraZoomRange = .init(
+            minCenterCoordinateDistance: C.Map.minCenterCoordinateDistance,
+            maxCenterCoordinateDistance: mapView.cameraZoomRange.maxCenterCoordinateDistance
+        )
     }
     
     private func setupButtons() {

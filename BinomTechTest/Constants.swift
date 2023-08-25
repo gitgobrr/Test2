@@ -9,10 +9,13 @@ typealias C = Constants
 
 enum Constants {
     static let sheetHeightMultiplier = 0.2
-    static let minSpanDelta = 1.0/60
-    static let maxSpanDelta = 180.0
     static let pinAnnotationHeight = 48.0
     static let bottomSheetImageHeight = 56.0
+    enum Map {
+        static let minSpanDelta = 1.0/60
+        static let maxSpanDelta = 180.0
+        static let minCenterCoordinateDistance = 400.0
+    }
     enum Spacing {
         static let mini = 4.0
         static let small = 8.0
