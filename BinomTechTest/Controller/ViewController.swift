@@ -81,8 +81,8 @@ extension ViewController: MKMapViewDelegate {
         }
         vc.modalPresentationStyle = .pageSheet
         if let sheet = vc.sheetPresentationController {
-            sheet.detents = [.custom(identifier: .medium,resolver: { context in
-                context.maximumDetentValue * C.sheetHeightMultiplier
+            sheet.detents = [.custom(identifier: .medium,resolver: { _ in
+                C.bottomSheetImageHeight+vc.storiesButton.intrinsicContentSize.height+C.Spacing.medium
             })]
             sheet.largestUndimmedDetentIdentifier = .medium
             sheet.prefersGrabberVisible = true
