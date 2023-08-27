@@ -24,10 +24,17 @@ class ViewController: UIViewController {
     }()
     
     var currentAnnotationIndex = 0
+    var selectedAnnotation: MKAnnotation?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setup()
+    }
+    
+    override func dismiss(animated flag: Bool, completion: (() -> Void)? = nil) {
+        super.dismiss(animated: flag, completion: completion)
+        mapView.deselectAnnotation(selectedAnnotation, animated: true)
+        selectedAnnotation = nil
     }
     
     @objc func zoomIn() {
@@ -72,9 +79,16 @@ extension ViewController: MKMapViewDelegate {
             return MKTileOverlayRenderer()
         }
     }
-    
+        
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        mapView.deselectAnnotation(view.annotation, animated: false)
+        if let selectedAnnotation = selectedAnnotation {
+            if !selectedAnnotation.isEqual(view.annotation) {
+                dismiss(animated: true)
+            }
+        }
+        
+        self.selectedAnnotation = view.annotation
+        
         let vc = SheetViewController(annotationView: view)
         if view.annotation is PinAnnotation {
             vc.imageView.image = UIImage(named: "avatar")
